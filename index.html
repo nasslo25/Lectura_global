@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juegos de Lectura Global</title>
+
+    <!-- ========================================== -->
+    <!-- CONFIGURACIÓN DE APLICACIÓN (PWA)          -->
+    <!-- ========================================== -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#29b6f6">
+    <link rel="icon" type="image/png" href="icono_2.png">
+    <link rel="apple-touch-icon" href="icono_2.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Aprendo a Leer">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e0f7fa;
+            text-align: center;
+            margin: 0;
+            padding: 15px;
+            user-select: none;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 25px;
+            padding: clamp(20px, 4vw, 40px);
+            width: 100%;
+            max-width: 850px;
+            box-shadow: 0 12px 25px rgba(0,0,0,0.12);
+            position: relative;
+            margin: 0 auto;
+            margin-bottom: 60px;
+        }
+
+        h1 {
+            color: #00838f;
+            font-size: clamp(2em, 5vw, 2.8em);
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        /* Selector de Tema / Categoría */
+        .category-selector {
+            margin-bottom: 25px;
+            background-color: #fffde7;
+            border: 3px solid #fbc02d;
+            border-radius: 16px;
+            padding: 12px 18px;
+            display: inline-block;
+            width: 100%;
+            max-width: 500px;
+        }
+        .category-selector label {
+            font-weight: bold;
+            color: #f57f17;
+            font-size: clamp(14px, 3.5vw, 18px);
+            display: block;
+            margin-bottom: 8px;
+        }
+        .category-selector select {
+            width: 100%;
+            padding: 12px;
+            font-size: clamp(16px, 4vw, 20px);
+            font-weight: bold;
+            border-radius: 10px;
+            border: 2px solid #fbc02d;
+            background-color: white;
+            color: #333;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        
+        /* Contenedor y Botones del Menú Principal */
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .btn {
+            background-color: #29b6f6;
+            color: white;
+            border: none;
+            border-radius: 18px;
+            padding: 18px 25px;
+            font-size: clamp(18px, 4vw, 24px);
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            box-shadow: 0 6px 0 #0288d1;
+            font-family: inherit;
+            width: 100%;
+            max-width: 480px;
+        }
+        .btn:hover { transform: scale(1.02); background-color: #4fc3f7; }
+        .btn:active { transform: translateY(4px); box-shadow: 0 0 0 #0288d1; }
+        .btn-back { 
+            background-color: #ef5350; 
+            box-shadow: 0 5px 0 #c62828; 
+            margin-top: 20px; 
+            width: auto; 
+            padding: 12px 25px;
+            font-size: clamp(16px, 3.5vw, 20px);
+        }
+
+        /* Vistas */
+        #menu, #game1, #game2, #game3, #game4 { display: none; }
+        #menu.active, #game1.active, #game2.active, #game3.active, #game4.active { display: block; }
+
+        /* Estructura Estricta para Palabra en Una Sola Línea */
+        .word-box {
+            display: inline-flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: center !important;
+            white-space: nowrap !important;
+            line-height: 1 !important;
+        }
+        .first-red {
+            color: #e53935 !important;
+            font-weight: bold;
+            display: inline !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* JUEGO 1: Tocar */
+        #image-display { 
+            font-size: clamp(80px, 18vw, 130px); 
+            margin: 15px 0; 
+            animation: popIn 0.5s ease; 
+        }
+        .options { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 18px; 
+            align-items: center;
+        }
+        .option-btn {
+            background-color: #ffffff;
+            color: #333;
+            border: 3px solid #ff9800;
+            border-radius: 20px;
+            padding: 20px;
+            font-size: clamp(24px, 6vw, 36px);
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #e65100;
+            width: 100%;
+            max-width: 480px;
+        }
+
+        /* JUEGO 2: Unir con Líneas */
+        .match-columns { 
+            display: flex; 
+            justify-content: space-between; 
+            position: relative; 
+            margin-top: 20px; 
+        }
+        .column { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            width: 46%; 
+            position: relative; 
+            z-index: 10; 
+        }
+        .match-item {
+            background-color: #ffffff;
+            border: 3px solid #ffb74d;
+            border-radius: 18px;
+            padding: 10px 5px;
+            font-size: clamp(18px, 4.5vw, 26px);
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: clamp(65px, 12vh, 85px);
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .emoji-large { font-size: clamp(32px, 8vw, 48px); line-height: 1; }
+        .small-text { font-size: clamp(14px, 3.5vw, 18px); color: #555; margin-top: 5px; font-weight: bold; }
+        #svg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+
+        /* JUEGO 3 y 4: Arrastrar Etiquetas / Completar Oraciones */
+        .casillas-container { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .casilla {
+            background-color: #f1f8e9;
+            border: 3px dashed #8bc34a;
+            border-radius: 18px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: clamp(70px, 12vh, 85px);
+        }
+        .casilla-info { display: flex; align-items: center; gap: 12px; }
+        
+        .drop-zone {
+            width: 45%;
+            max-width: 200px;
+            height: clamp(50px, 8vh, 60px);
+            border: 2px solid #aed581;
+            border-radius: 14px;
+            background-color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Estilos específicos para las oraciones de Juego 4 */
+        .sentence-box {
+            background-color: #f3e5f5;
+            border: 3px dashed #ab47bc;
+            border-radius: 18px;
+            padding: 20px;
+            font-size: clamp(20px, 5vw, 28px);
+            font-weight: bold;
+            color: #333;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            line-height: 1.4;
+        }
+        .sentence-box .drop-zone {
+            width: 180px;
+            height: clamp(45px, 7vh, 55px);
+            border-color: #ce93d8;
+            margin: 0 10px;
+        }
+
+        .etiquetas-container { 
+            display: flex; 
+            justify-content: center; 
+            gap: 12px; 
+            margin-top: 25px; 
+            min-height: 65px; 
+            flex-wrap: wrap; 
+        }
+        .etiqueta {
+            background-color: #ffffff;
+            border: 3px solid #ff9800;
+            border-radius: 14px;
+            padding: 10px 18px;
+            font-size: clamp(18px, 4.5vw, 26px);
+            font-weight: bold;
+            color: #333;
+            cursor: grab;
+            box-shadow: 0 4px 0 #e65100;
+            touch-action: none;
+            z-index: 100;
+        }
+        .etiqueta.placed { box-shadow: none; border-color: #4caf50; background-color: #e8f5e9; cursor: default; }
+
+        /* Mensajes */
+        #message1, #message2, #message3, #message4 { 
+            font-size: clamp(20px, 5vw, 28px); 
+            font-weight: bold; 
+            margin-top: 20px; 
+            min-height: 40px; 
+        }
+        .success { color: #4caf50; animation: popIn 0.3s; }
+        .error { color: #f44336; }
+        
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Firma */
+        .fixed { position: fixed; }
+        .bottom-12 { bottom: 3rem; }
+        .right-4 { right: 1rem; }
+        .opacity-60 { opacity: 0.65; }
+        .opacity-60:hover, .signature-block:hover { opacity: 1; }
+        .transition-opacity { transition: opacity 500ms ease; }
+        .duration-500 { transition-duration: 500ms; }
+        .z-50 { z-index: 50; }
+        .pointer-events-none { pointer-events: auto; }
+        .select-none { user-select: none; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-end { align-items: flex-end; }
+        .text-\[0\.65rem\] { font-size: 0.65rem; }
+        .text-gray-400 { color: #556b72; }
+        .uppercase { text-transform: uppercase; }
+        .tracking-widest { letter-spacing: 0.1em; }
+        .font-sans { font-family: sans-serif; }
+        .mb-\[-4px\] { margin-bottom: -4px; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-gray-200 { color: #004d40; }
+        .text-\[0\.6rem\] { font-size: 0.6rem; }
+        .mt-1 { margin-top: 0.25rem; }
+
+        .welcome-signature {
+            margin-top: 35px;
+            padding-top: 15px;
+            border-top: 2px dashed #b2ebf2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @media (min-width: 768px) {
+            .md\:bottom-16 { bottom: 4rem; }
+            .md\:right-8 { right: 2rem; }
+        }
+        @media print {
+            .print\:hidden { display: none !important; }
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 15px 12px; }
+            .casilla { padding: 8px 10px; }
+            .drop-zone { width: 50%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>¡APRENDO A LEER!</h1>
+        
+        <!-- SELECTOR GLOBAL DE TEMAS -->
+        <div class="category-selector">
+            <label for="theme-select">🎯 ELIGE EL TEMA A TRABAJAR:</label>
+            <select id="theme-select" onchange="onThemeChange()">
+                <option value="todos">🔀 TODOS / ALEATORIO</option>
+                <option value="fantasia">🏰 CUENTOS Y FANTASÍA</option>
+                <option value="frutas">🍎 FRUTAS</option>
+                <option value="animales">🐶 ANIMALES</option>
+                <option value="profesiones">👨‍🚒 PROFESIONES U OFICIOS</option>
+                <option value="tecnologia">💻 EQUIPOS TECNOLÓGICOS</option>
+                <option value="limpieza_hogar">🧹 ÚTILES DE LIMPIEZA</option>
+                <option value="aseo_personal">🪥 ÚTILES DE ASEO PERSONAL</option>
+                <option value="colegio">🎒 ÚTILES DE COLEGIO</option>
+                <option value="instrumentos">🎸 INSTRUMENTOS MUSICALES</option>
+                <option value="alimentos">🥖 ALIMENTOS</option>
+                <option value="muebles">🛏️ MUEBLES Y HOGAR</option>
+                <option value="transporte">🚗 TRANSPORTE</option>
+                <option value="naturaleza">🌳 NATURALEZA</option>
+                <option value="cuerpo">👁️ PARTES DEL CUERPO</option>
+            </select>
+        </div>
+
+        <!-- MENÚ PRINCIPAL (PANTALLA DE BIENVENIDA) -->
+        <div id="menu" class="active">
+            <h2>ELIGE UN JUEGO:</h2>
+            <div class="menu-buttons">
+                <button class="btn" style="background-color: #ff9800; box-shadow: 0 6px 0 #e65100;" onclick="showGame('game3')">🏷️ ARRASTRAR ETIQUETA</button>
+                <button class="btn" style="background-color: #9c27b0; box-shadow: 0 6px 0 #6a1b9a;" onclick="showGame('game2')">✍️ UNIR CON LÍNEAS</button>
+                <button class="btn" onclick="showGame('game1')">👆 TOCAR LA PALABRA</button>
+                <button class="btn" style="background-color: #e91e63; box-shadow: 0 6px 0 #c2185b;" onclick="showGame('game4')">🧠 COMPLETAR ORACIÓN</button>
+            </div>
+
+            <!-- FIRMA DENTRO DE LA PANTALLA DE BIENVENIDA -->
+            <div class="welcome-signature">
+                <span class="text-[0.65rem] text-gray-400 uppercase tracking-widest font-sans mb-[-4px]">Creada por</span>
+                <span class="text-2xl text-gray-200" style="font-family: 'Brush Script MT', 'Lucida Handwriting', 'Great Vibes', cursive;">Nasslo Muñoz</span>
+                <span class="text-[0.6rem] text-gray-400 font-sans tracking-widest uppercase mt-1">Ingeniero Informático</span>
+            </div>
+        </div>
+
+        <!-- JUEGO 1: TOCAR -->
+        <div id="game1">
+            <div id="image-display">🍎</div>
+            <div class="options" id="options-container"></div>
+            <div id="message1"></div>
+            <button class="btn btn-back" onclick="showMenu()">🏠 VOLVER AL MENÚ</button>
+        </div>
+
+        <!-- JUEGO 2: UNIR CON LÍNEAS -->
+        <div id="game2">
+            <h3>UNE LA IMAGEN CON SU PALABRA</h3>
+            <div class="match-columns" id="match-container">
+                <div class="column" id="left-col"></div>
+                <div class="column" id="right-col"></div>
+                <svg id="svg-layer"></svg>
+            </div>
+            <div id="message2"></div>
+            <button class="btn" style="background-color: #4caf50; box-shadow: 0 5px 0 #2e7d32; display: none;" id="btn-next-match" onclick="initMatchGame()">¡OTRA VEZ! 🔄</button>
+            <button class="btn btn-back" onclick="showMenu()">🏠 VOLVER AL MENÚ</button>
+        </div>
+
+        <!-- JUEGO 3: ARRASTRAR ETIQUETA -->
+        <div id="game3">
+            <h3>ARRASTRA LA ETIQUETA A SU CASILLA</h3>
+            <div class="casillas-container" id="casillas-container"></div>
+            <div class="etiquetas-container" id="etiquetas-container"></div>
+            <div id="message3"></div>
+            <button class="btn" style="background-color: #4caf50; box-shadow: 0 5px 0 #2e7d32; display: none;" id="btn-next-drag" onclick="initDragGame()">¡OTRA VEZ! 🔄</button>
+            <button class="btn btn-back" onclick="showMenu()">🏠 VOLVER AL MENÚ</button>
+        </div>
+
+        <!-- JUEGO 4: COMPLETAR ORACIONES -->
+        <div id="game4">
+            <h3>COMPLETA LA ORACIÓN</h3>
+            <div id="sentence-container"></div>
+            <div class="etiquetas-container" id="sentence-options-container"></div>
+            <div id="message4"></div>
+            <button class="btn" style="background-color: #4caf50; box-shadow: 0 5px 0 #2e7d32; display: none;" id="btn-next-sentence" onclick="initSentenceGame()">¡OTRA VEZ! 🔄</button>
+            <button class="btn btn-back" onclick="showMenu()">🏠 VOLVER AL MENÚ</button>
+        </div>
+    </div>
+
+    <!-- BLOQUE DE FIRMA FLOTANTE -->
+    <div class="fixed bottom-12 right-4 md:bottom-16 md:right-8 opacity-60 hover:opacity-100 transition-opacity duration-500 z-50 print:hidden pointer-events-none select-none signature-block">
+        <div class="flex flex-col items-end">
+            <span class="text-[0.65rem] text-gray-400 uppercase tracking-widest font-sans mb-[-4px]">Creada por</span>
+            <span class="text-2xl text-gray-200" style="font-family: 'Brush Script MT', 'Lucida Handwriting', 'Great Vibes', cursive;">Nasslo Muñoz</span>
+            <span class="text-[0.6rem] text-gray-400 font-sans tracking-widest uppercase mt-1">Ingeniero Informático</span>
+        </div>
+    </div>
+
+    <script>
+        // VOCABULARIO BASE
+        const vocabulary = [
+            // Cuentos y Fantasía
+            { word: "CASTILLO", emoji: "🏰", category: "fantasia" }, { word: "DRAGÓN", emoji: "🐉", category: "fantasia" }, { word: "PRINCESA", emoji: "👸", category: "fantasia" }, { word: "REY", emoji: "👑", category: "fantasia" }, { word: "PRÍNCIPE", emoji: "🤴", category: "fantasia" }, { word: "ESPADA", emoji: "🗡️", category: "fantasia" }, { word: "BRUJA", emoji: "🧙‍♀️", category: "fantasia" }, { word: "HADA", emoji: "🧚‍♀️", category: "fantasia" }, { word: "SIRENA", emoji: "🧜‍♀️", category: "fantasia" }, { word: "MAGO", emoji: "🧙‍♂️", category: "fantasia" }, { word: "UNICORNIO", emoji: "🦄", category: "fantasia" }, { word: "FANTASMA", emoji: "👻", category: "fantasia" }, { word: "EXTRATERRESTRE", emoji: "👽", category: "fantasia" }, { word: "ROBOT", emoji: "🤖", category: "fantasia" },
+            // Frutas
+            { word: "MANZANA", emoji: "🍎", category: "frutas" }, { word: "PLÁTANO", emoji: "🍌", category: "frutas" }, { word: "UVA", emoji: "🍇", category: "frutas" }, { word: "FRUTILLA", emoji: "🍓", category: "frutas" }, { word: "NARANJA", emoji: "🍊", category: "frutas" }, { word: "LIMÓN", emoji: "🍋", category: "frutas" }, { word: "SANDÍA", emoji: "🍉", category: "frutas" }, { word: "PIÑA", emoji: "🍍", category: "frutas" }, { word: "CEREZA", emoji: "🍒", category: "frutas" }, { word: "DURAZNO", emoji: "🍑", category: "frutas" }, { word: "PERA", emoji: "🍐", category: "frutas" }, { word: "MANGO", emoji: "🥭", category: "frutas" }, { word: "KIWI", emoji: "🥝", category: "frutas" }, { word: "ARÁNDANO", emoji: "🫐", category: "frutas" },
+            // Animales
+            { word: "PERRO", emoji: "🐶", category: "animales" }, { word: "GATO", emoji: "🐱", category: "animales" }, { word: "VACA", emoji: "🐄", category: "animales" }, { word: "CERDO", emoji: "🐷", category: "animales" }, { word: "CABALLO", emoji: "🐴", category: "animales" }, { word: "OVEJA", emoji: "🐑", category: "animales" }, { word: "SAPO", emoji: "🐸", category: "animales" }, { word: "PEZ", emoji: "🐟", category: "animales" }, { word: "LEÓN", emoji: "🦁", category: "animales" }, { word: "TIGRE", emoji: "🐯", category: "animales" }, { word: "ELEFANTE", emoji: "🐘", category: "animales" }, { word: "MONO", emoji: "🐵", category: "animales" }, { word: "OSO", emoji: "🐻", category: "animales" }, { word: "PÁJARO", emoji: "🐦", category: "animales" }, { word: "PINGÜINO", emoji: "🐧", category: "animales" }, { word: "CONEJO", emoji: "🐰", category: "animales" }, { word: "TORTUGA", emoji: "🐢", category: "animales" }, { word: "SERPIENTE", emoji: "🐍", category: "animales" }, { word: "ARAÑA", emoji: "🕷️", category: "animales" }, { word: "MARIPOSA", emoji: "🦋", category: "animales" },
+            // Profesiones
+            { word: "DOCTOR", emoji: "👨‍⚕️", category: "profesiones" }, { word: "BOMBERO", emoji: "👨‍🚒", category: "profesiones" }, { word: "POLICÍA", emoji: "👮", category: "profesiones" }, { word: "PROFESOR", emoji: "👨‍🏫", category: "profesiones" }, { word: "COCINERO", emoji: "👨‍🍳", category: "profesiones" }, { word: "PINTOR", emoji: "🎨", category: "profesiones" }, { word: "ASTRONAUTA", emoji: "👨‍🚀", category: "profesiones" }, { word: "GRANJERO", emoji: "👨‍🌾", category: "profesiones" }, { word: "PILOTO", emoji: "👨‍✈️", category: "profesiones" }, { word: "MECÁNICO", emoji: "👨‍🔧", category: "profesiones" }, { word: "CIENTÍFICO", emoji: "👨‍🔬", category: "profesiones" }, { word: "JUEZ", emoji: "👨‍⚖️", category: "profesiones" },
+            // Tecnología
+            { word: "TELÉFONO", emoji: "📱", category: "tecnologia" }, { word: "COMPUTADOR", emoji: "💻", category: "tecnologia" }, { word: "TELEVISOR", emoji: "📺", category: "tecnologia" }, { word: "RADIO", emoji: "📻", category: "tecnologia" }, { word: "AUDÍFONOS", emoji: "🎧", category: "tecnologia" }, { word: "RELOJ", emoji: "⌚", category: "tecnologia" }, { word: "CÁMARA", emoji: "📷", category: "tecnologia" }, { word: "VIDEOJUEGO", emoji: "🎮", category: "tecnologia" }, { word: "BATERÍA", emoji: "🔋", category: "tecnologia" }, { word: "RATÓN", emoji: "🖱️", category: "tecnologia" }, { word: "IMPRESORA", emoji: "🖨️", category: "tecnologia" },
+            // Limpieza
+            { word: "ESCOBA", emoji: "🧹", category: "limpieza_hogar" }, { word: "ESPONJA", emoji: "🧽", category: "limpieza_hogar" }, { word: "BALDE", emoji: "🪣", category: "limpieza_hogar" }, { word: "BASURERO", emoji: "🗑️", category: "limpieza_hogar" }, { word: "PAPEL", emoji: "🧻", category: "limpieza_hogar" },
+            // Aseo
+            { word: "JABÓN", emoji: "🧼", category: "aseo_personal" }, { word: "PEINETA", emoji: "🪮", category: "aseo_personal" }, { word: "CEPILLO", emoji: "🪥", category: "aseo_personal" }, { word: "ESPEJO", emoji: "🪞", category: "aseo_personal" }, { word: "DUCHA", emoji: "🚿", category: "aseo_personal" }, { word: "BAÑERA", emoji: "🛁", category: "aseo_personal" },
+            // Colegio
+            { word: "LÁPIZ", emoji: "✏️", category: "colegio" }, { word: "CUADERNO", emoji: "📓", category: "colegio" }, { word: "MOCHILA", emoji: "🎒", category: "colegio" }, { word: "TIJERAS", emoji: "✂️", category: "colegio" }, { word: "REGLA", emoji: "📏", category: "colegio" }, { word: "LIBRO", emoji: "📖", category: "colegio" }, { word: "CRAYÓN", emoji: "🖍️", category: "colegio" }, { word: "CALCULADORA", emoji: "🧮", category: "colegio" }, { word: "CLIP", emoji: "📎", category: "colegio" }, { word: "PINCEL", emoji: "🖌️", category: "colegio" },
+            // Instrumentos
+            { word: "GUITARRA", emoji: "🎸", category: "instrumentos" }, { word: "TAMBOR", emoji: "🥁", category: "instrumentos" }, { word: "PIANO", emoji: "🎹", category: "instrumentos" }, { word: "TROMPETA", emoji: "🎺", category: "instrumentos" }, { word: "VIOLÍN", emoji: "🎻", category: "instrumentos" }, { word: "SAXOFÓN", emoji: "🎷", category: "instrumentos" }, { word: "ACORDEÓN", emoji: "🪗", category: "instrumentos" }, { word: "MICRÓFONO", emoji: "🎤", category: "instrumentos" },
+            // Alimentos
+            { word: "PAN", emoji: "🥖", category: "alimentos" }, { word: "QUESO", emoji: "🧀", category: "alimentos" }, { word: "LECHE", emoji: "🥛", category: "alimentos" }, { word: "HUEVO", emoji: "🥚", category: "alimentos" }, { word: "PIZZA", emoji: "🍕", category: "alimentos" }, { word: "HAMBURGUESA", emoji: "🍔", category: "alimentos" }, { word: "PAPAS", emoji: "🍟", category: "alimentos" }, { word: "HELADO", emoji: "🍦", category: "alimentos" }, { word: "PASTEL", emoji: "🍰", category: "alimentos" }, { word: "GALLETA", emoji: "🍪", category: "alimentos" }, { word: "CHOCOLATE", emoji: "🍫", category: "alimentos" }, { word: "DULCE", emoji: "🍬", category: "alimentos" }, { word: "MIEL", emoji: "🍯", category: "alimentos" }, { word: "CARNE", emoji: "🥩", category: "alimentos" }, { word: "POLLO", emoji: "🍗", category: "alimentos" }, { word: "ARROZ", emoji: "🍚", category: "alimentos" },
+            // Muebles
+            { word: "CAMA", emoji: "🛏️", category: "muebles" }, { word: "SILLA", emoji: "🪑", category: "muebles" }, { word: "SOFÁ", emoji: "🛋️", category: "muebles" }, { word: "ARMARIO", emoji: "🚪", category: "muebles" }, { word: "VENTANA", emoji: "🪟", category: "muebles" }, { word: "BAÑO", emoji: "🚽", category: "muebles" }, { word: "ESCALERA", emoji: "🪜", category: "muebles" }, { word: "RELOJ", emoji: "🕰️", category: "muebles" },
+            // Transporte
+            { word: "AUTO", emoji: "🚗", category: "transporte" }, { word: "AVIÓN", emoji: "✈️", category: "transporte" }, { word: "BARCO", emoji: "🚢", category: "transporte" }, { word: "TREN", emoji: "🚂", category: "transporte" }, { word: "BICICLETA", emoji: "🚲", category: "transporte" }, { word: "MOTO", emoji: "🏍️", category: "transporte" }, { word: "AUTOBÚS", emoji: "🚌", category: "transporte" }, { word: "HELICÓPTERO", emoji: "🚁", category: "transporte" }, { word: "COHETE", emoji: "🚀", category: "transporte" }, { word: "CAMIÓN", emoji: "🚚", category: "transporte" },
+            // Naturaleza
+            { word: "SOL", emoji: "☀️", category: "naturaleza" }, { word: "LUNA", emoji: "🌙", category: "naturaleza" }, { word: "ESTRELLA", emoji: "⭐", category: "naturaleza" }, { word: "ÁRBOL", emoji: "🌳", category: "naturaleza" }, { word: "FLOR", emoji: "🌻", category: "naturaleza" }, { word: "LLUVIA", emoji: "🌧️", category: "naturaleza" }, { word: "NIEVE", emoji: "❄️", category: "naturaleza" }, { word: "FUEGO", emoji: "🔥", category: "naturaleza" }, { word: "MONTAÑA", emoji: "⛰️", category: "naturaleza" }, { word: "NUBE", emoji: "☁️", category: "naturaleza" },
+            // Cuerpo
+            { word: "OJO", emoji: "👁️", category: "cuerpo" }, { word: "OREJA", emoji: "👂", category: "cuerpo" }, { word: "NARIZ", emoji: "👃", category: "cuerpo" }, { word: "BOCA", emoji: "👄", category: "cuerpo" }, { word: "MANO", emoji: "🖐️", category: "cuerpo" }, { word: "PIE", emoji: "🦶", category: "cuerpo" }, { word: "DIENTE", emoji: "🦷", category: "cuerpo" }, { word: "CEREBRO", emoji: "🧠", category: "cuerpo" }, { word: "CORAZÓN", emoji: "❤️", category: "cuerpo" }, { word: "BRAZO", emoji: "💪", category: "cuerpo" }
+        ];
+
+        // BASE DE DATOS EXTENDIDA DE ORACIONES
+        const sentencesData = [
+            // Cuentos y Fantasía
+            { category: "fantasia", text: "El rey vive en un hermoso", answer: "CASTILLO" },
+            { category: "fantasia", text: "Lanza fuego por la boca el gran", answer: "DRAGÓN" },
+            { category: "fantasia", text: "La corona en la cabeza la lleva el", answer: "REY" },
+            { category: "fantasia", text: "La varita mágica la usa el", answer: "MAGO" },
+            { category: "fantasia", text: "Tiene un cuerno brillante el", answer: "UNICORNIO" },
+            { category: "fantasia", text: "Vive en las profundidades del mar la", answer: "SIRENA" },
+            { category: "fantasia", text: "El guerrero se defiende con una", answer: "ESPADA" },
+            { category: "fantasia", text: "Vuela sobre una escoba la", answer: "BRUJA" },
+            { category: "fantasia", text: "Es de metal y parpadea, es un", answer: "ROBOT" },
+
+            // Frutas
+            { category: "frutas", text: "Al mono le encanta comer un rico", answer: "PLÁTANO" },
+            { category: "frutas", text: "Es roja, jugosa y dulce la", answer: "MANZANA" },
+            { category: "frutas", text: "La fruta ácida y amarilla es el", answer: "LIMÓN" },
+            { category: "frutas", text: "Es verde por fuera y roja por dentro la", answer: "SANDÍA" },
+            { category: "frutas", text: "Son pequeñas y vienen en racimo, me gusta la", answer: "UVA" },
+            { category: "frutas", text: "Es pequeña, roja y deliciosa la", answer: "FRUTILLA" },
+            { category: "frutas", text: "Tiene mucha vitamina C la jugosa", answer: "NARANJA" },
+            { category: "frutas", text: "Tiene una corona de hojas la rica", answer: "PIÑA" },
+
+            // Animales
+            { category: "animales", text: "El mejor amigo del hombre es el", answer: "PERRO" },
+            { category: "animales", text: "Hace miau y le gusta dormir, es el", answer: "GATO" },
+            { category: "animales", text: "La leche fresca nos la da la", answer: "VACA" },
+            { category: "animales", text: "Es el rey de la selva el", answer: "LEÓN" },
+            { category: "animales", text: "Tiene una trompa muy larga el", answer: "ELEFANTE" },
+            { category: "animales", text: "Nada alegremente en el agua el", answer: "PEZ" },
+            { category: "animales", text: "Le encanta comer zanahorias al", answer: "CONEJO" },
+            { category: "animales", text: "Canta alegre por la mañana el", answer: "PÁJARO" },
+            { category: "animales", text: "Camina muy lento llevando su caparazón la", answer: "TORTUGA" },
+            { category: "animales", text: "Salta alto en la laguna el green", answer: "SAPO" },
+
+            // Profesiones
+            { category: "profesiones", text: "El fuego de la casa lo apaga el", answer: "BOMBERO" },
+            { category: "profesiones", text: "Me cura cuando estoy enfermo el", answer: "DOCTOR" },
+            { category: "profesiones", text: "Nos enseña en la escuela el", answer: "PROFESOR" },
+            { category: "profesiones", text: "Prepara rica comida en el restaurante el", answer: "COCINERO" },
+            { category: "profesiones", text: "Cuida la seguridad de la ciudad el", answer: "POLICÍA" },
+            { category: "profesiones", text: "Pinta cuadros hermosos con sus pinturas el", answer: "PINTOR" },
+            { category: "profesiones", text: "Viaja al espacio en su nave el", answer: "ASTRONAUTA" },
+            { category: "profesiones", text: "Arregla los motores de los autos el", answer: "MECÁNICO" },
+
+            // Tecnología
+            { category: "tecnologia", text: "Veo dibujos animados en el", answer: "TELEVISOR" },
+            { category: "tecnologia", text: "Hago mis tareas buscando en el", answer: "COMPUTADOR" },
+            { category: "tecnologia", text: "Llamo a mis amigos usando el", answer: "TELÉFONO" },
+            { category: "tecnologia", text: "Escucho mi música favorita con los", answer: "AUDÍFONOS" },
+            { category: "tecnologia", text: "Me dice la hora en la muñeca el", answer: "RELOJ" },
+            { category: "tecnologia", text: "Tomo fotos bonitas con la", answer: "CÁMARA" },
+            { category: "tecnologia", text: "Muevo la flecha en la pantalla usando el", answer: "RATÓN" },
+
+            // Limpieza del hogar
+            { category: "limpieza_hogar", text: "Para limpiar el suelo yo uso la", answer: "ESCOBA" },
+            { category: "limpieza_hogar", text: "Boto la basura dentro del", answer: "BASURERO" },
+            { category: "limpieza_hogar", text: "Para lavar la losa usamos la", answer: "ESPONJA" },
+            { category: "limpieza_hogar", text: "Junto agua con detergente en el", answer: "BALDE" },
+
+            // Aseo personal
+            { category: "aseo_personal", text: "Me lavo los dientes con el", answer: "CEPILLO" },
+            { category: "aseo_personal", text: "Me miro la cara en el", answer: "ESPEJO" },
+            { category: "aseo_personal", text: "Me lavo las manos con agua y", answer: "JABÓN" },
+            { category: "aseo_personal", text: "Me peino el cabello con la", answer: "PEINETA" },
+            { category: "aseo_personal", text: "Me doy un buen baño caliente en la", answer: "DUCHA" },
+
+            // Colegio
+            { category: "colegio", text: "Guardo mis cuadernos en la", answer: "MOCHILA" },
+            { category: "colegio", text: "Escribo mis tareas usando un", answer: "LÁPIZ" },
+            { category: "colegio", text: "Recorto las fotos usando las", answer: "TIJERAS" },
+            { category: "colegio", text: "Para trazar líneas derechas uso la", answer: "REGLA" },
+            { category: "colegio", text: "Leo una bonita historia en un", answer: "LIBRO" },
+            { category: "colegio", text: "Pinto con tempera usando el", answer: "PINCEL" },
+
+            // Instrumentos
+            { category: "instrumentos", text: "Tiene seis cuerdas y suena lindo la", answer: "GUITARRA" },
+            { category: "instrumentos", text: "Se toca marcando el ritmo con baquetas el", answer: "TAMBOR" },
+            { category: "instrumentos", text: "Tiene muchas teclas blancas y negras el", answer: "PIANO" },
+            { category: "instrumentos", text: "Soplo fuerte para hacer sonar la", answer: "TROMPETA" },
+            { category: "instrumentos", text: "Canto muy fuerte usando el", answer: "MICRÓFONO" },
+
+            // Alimentos
+            { category: "alimentos", text: "A los ratoncitos les gusta el", answer: "QUESO" },
+            { category: "alimentos", text: "Al desayuno me tomo un vaso de", answer: "LECHE" },
+            { category: "alimentos", text: "Es suave, crujiente y se come al desayuno el", answer: "PAN" },
+            { category: "alimentos", text: "En los cumpleaños comemos una tajada de", answer: "PASTEL" },
+            { category: "alimentos", text: "Es muy frío, dulce y rico en verano el", answer: "HELADO" },
+            { category: "alimentos", text: "A las abejas les gusta fabricar la", answer: "MIEL" },
+            { category: "alimentos", text: "Es dulce y está hecho de cacao el", answer: "CHOCOLATE" },
+
+            // Muebles y Hogar
+            { category: "muebles", text: "En la noche me duermo en mi", answer: "CAMA" },
+            { category: "muebles", text: "Me siento a almorzar en la", answer: "SILLA" },
+            { category: "muebles", text: "Miro hacia afuera a través de la", answer: "VENTANA" },
+            { category: "muebles", text: "Nos sentamos en familia a descansar en el", answer: "SOFÁ" },
+            { category: "muebles", text: "Guardo mi ropa organizada en el", answer: "ARMARIO" },
+
+            // Transporte
+            { category: "transporte", text: "Iré al espacio exterior en un", answer: "COHETE" },
+            { category: "transporte", text: "Viajo por el agua en un gran", answer: "BARCO" },
+            { category: "transporte", text: "Vuelo muy alto en el cielo en un", answer: "AVIÓN" },
+            { category: "transporte", text: "Anda por las vías sobre rieles el", answer: "TREN" },
+            { category: "transporte", text: "Pedaleo con fuerza en mi", answer: "BICICLETA" },
+            { category: "transporte", text: "Los niños van al colegio en el", answer: "AUTOBÚS" },
+            { category: "transporte", text: "Papá conduce hacia el trabajo en su", answer: "AUTO" },
+
+            // Naturaleza
+            { category: "naturaleza", text: "De día ilumina en el cielo el", answer: "SOL" },
+            { category: "naturaleza", text: "Brilla de noche en el cielo la", answer: "LUNA" },
+            { category: "naturaleza", text: "Titila de noche en el cielo una", answer: "ESTRELLA" },
+            { category: "naturaleza", text: "En el bosque hay mucho verdes", answer: "ÁRBOL" },
+            { category: "naturaleza", text: "Tienen un rico aroma y pétalos la", answer: "FLOR" },
+            { category: "naturaleza", text: "Caen gotas de agua cuando hay", answer: "LLUVIA" },
+
+            // Cuerpo
+            { category: "cuerpo", text: "Para ver los colores uso mi", answer: "OJO" },
+            { category: "cuerpo", text: "Para caminar y correr uso mi", answer: "PIE" },
+            { category: "cuerpo", text: "Escucho la música con mi", answer: "OREJA" },
+            { category: "cuerpo", text: "Huelo los perfumes con mi", answer: "NARIZ" },
+            { category: "cuerpo", text: "Lavo todos los días cada", answer: "DIENTE" },
+            { category: "cuerpo", text: "Para comer y sonreír uso mi", answer: "BOCA" },
+            { category: "cuerpo", text: "Para saludar y tomar las cosas uso mi", answer: "MANO" }
+        ];
+
+        let activeGameId = 'menu';
+
+        /* --- SINTETIZADOR DE EFECTOS DE SONIDO --- */
+        let audioCtx = null;
+        function getAudioContext() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function playBuzzerSound() {
+            try {
+                const ctx = getAudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(130, ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(90, ctx.currentTime + 0.35);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.35);
+            } catch (e) { console.error(e); }
+        }
+
+        function playChimeSound() {
+            try {
+                const ctx = getAudioContext();
+                const notes = [1046.50, 1567.98];
+                notes.forEach((freq, index) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + (index * 0.06));
+                    gain.gain.setValueAtTime(0.25, ctx.currentTime + (index * 0.06));
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (index * 0.06) + 0.45);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(ctx.currentTime + (index * 0.06));
+                    osc.stop(ctx.currentTime + (index * 0.06) + 0.45);
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        /* --- SÍNTESIS DE VOZ --- */
+        let availableVoices = [];
+        function loadVoices() {
+            if ('speechSynthesis' in window) availableVoices = window.speechSynthesis.getVoices();
+        }
+        if ('speechSynthesis' in window) {
+            loadVoices();
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+        }
+
+        function speakText(text) {
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text.toLowerCase());
+            utterance.rate = 0.85; 
+            utterance.pitch = 0.85; 
+
+            if (availableVoices.length === 0) availableVoices = window.speechSynthesis.getVoices();
+            
+            let selectedVoice = availableVoices.find(v => 
+                v.lang.includes('es') && 
+                (v.lang.includes('MX') || v.lang.includes('419') || v.lang.includes('AR') || v.lang.includes('CL') || v.lang.includes('US') || v.lang.includes('CO')) &&
+                (v.name.toLowerCase().includes('jorge') || v.name.toLowerCase().includes('diego') || v.name.toLowerCase().includes('carlos') || v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('hombre'))
+            );
+            if (!selectedVoice) selectedVoice = availableVoices.find(v => v.lang.includes('es') && (v.lang.includes('MX') || v.lang.includes('419') || v.lang.includes('AR')));
+            if (!selectedVoice) selectedVoice = availableVoices.find(v => v.lang.includes('es') && v.name.toLowerCase().includes('male'));
+            if (!selectedVoice) selectedVoice = availableVoices.find(v => v.lang.includes('es'));
+
+            if (selectedVoice) { utterance.voice = selectedVoice; utterance.lang = selectedVoice.lang; } 
+            else { utterance.lang = 'es-MX'; }
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        /* --- UTILIDADES --- */
+        function getFilteredVocabulary() {
+            const selectedTheme = document.getElementById('theme-select').value;
+            if (selectedTheme === 'todos') return vocabulary;
+            return vocabulary.filter(item => item.category === selectedTheme);
+        }
+
+        function getFilteredSentences() {
+            const selectedTheme = document.getElementById('theme-select').value;
+            if (selectedTheme === 'todos') return sentencesData;
+            const filtered = sentencesData.filter(item => item.category === selectedTheme);
+            return filtered.length > 0 ? filtered : sentencesData; 
+        }
+
+        function formatWordHTML(word) {
+            if(!word) return "";
+            const upper = word.toUpperCase();
+            return `<span class="word-box"><span class="first-red">${upper.charAt(0)}</span>${upper.slice(1)}</span>`;
+        }
+
+        function onThemeChange() {
+            if (activeGameId === 'game1') initGuessGame();
+            if (activeGameId === 'game2') initMatchGame();
+            if (activeGameId === 'game3') initDragGame();
+            if (activeGameId === 'game4') initSentenceGame();
+        }
+
+        function showMenu() {
+            activeGameId = 'menu';
+            document.querySelectorAll('div[id^="game"], #menu').forEach(el => el.className = '');
+            document.getElementById('menu').className = 'active';
+        }
+
+        function showGame(gameId) {
+            activeGameId = gameId;
+            document.querySelectorAll('div[id^="game"], #menu').forEach(el => el.className = '');
+            document.getElementById(gameId).className = 'active';
+
+            if(gameId === 'game1') initGuessGame();
+            if(gameId === 'game2') initMatchGame();
+            if(gameId === 'game3') initDragGame();
+            if(gameId === 'game4') initSentenceGame();
+        }
+
+        /* --- JUEGO 1: TOCAR --- */
+        function initGuessGame() {
+            document.getElementById('message1').innerText = "";
+            const currentVocab = getFilteredVocabulary();
+            const randomIndex = Math.floor(Math.random() * currentVocab.length);
+            let currentItem = currentVocab[randomIndex];
+            
+            document.getElementById('image-display').innerText = currentItem.emoji;
+            
+            let options = [currentItem.word];
+            let pool = currentVocab.length > 1 ? currentVocab : vocabulary;
+            while (options.length < 2) {
+                const randomWrongIndex = Math.floor(Math.random() * pool.length);
+                const wrongWord = pool[randomWrongIndex].word;
+                if (!options.includes(wrongWord)) options.push(wrongWord);
+            }
+            options.sort(() => Math.random() - 0.5);
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.innerHTML = formatWordHTML(option);
+                button.onclick = () => {
+                    const msg = document.getElementById('message1');
+                    if (option === currentItem.word) {
+                        playChimeSound(); speakText(option);
+                        msg.innerText = "¡MUY BIEN! 🎉"; msg.className = "success";
+                        setTimeout(initGuessGame, 1500);
+                    } else {
+                        playBuzzerSound();
+                        msg.innerText = "INTENTA DE NUEVO 🤔"; msg.className = "error";
+                    }
+                };
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        /* --- JUEGO 2: UNIR CON LÍNEAS --- */
+        let svg, activeLine = null, startEl = null, matchesFound = 0;
+        function initMatchGame() {
+            document.getElementById('message2').innerText = "";
+            document.getElementById('btn-next-match').style.display = "none";
+            matchesFound = 0;
+            const leftCol = document.getElementById('left-col');
+            const rightCol = document.getElementById('right-col');
+            svg = document.getElementById('svg-layer');
+            leftCol.innerHTML = ''; rightCol.innerHTML = ''; svg.innerHTML = '';
+            
+            const currentVocab = getFilteredVocabulary();
+            let gameWords = [...currentVocab].sort(() => Math.random() - 0.5).slice(0, Math.min(4, currentVocab.length));
+            let rightWords = [...gameWords].sort(() => Math.random() - 0.5);
+
+            gameWords.forEach(item => {
+                let div = document.createElement('div');
+                div.className = 'match-item left-item';
+                div.dataset.word = item.word;
+                div.innerHTML = `<span class="emoji-large">${item.emoji}</span><span class="small-text">${formatWordHTML(item.word)}</span>`;
+                div.addEventListener('mousedown', startDraw);
+                div.addEventListener('touchstart', startDraw, {passive: false});
+                leftCol.appendChild(div);
+            });
+
+            rightWords.forEach(item => {
+                let div = document.createElement('div');
+                div.className = 'match-item right-item';
+                div.dataset.word = item.word;
+                div.innerHTML = formatWordHTML(item.word);
+                div.addEventListener('click', () => { playChimeSound(); speakText(item.word); });
+                rightCol.appendChild(div);
+            });
+        }
+        function getCoords(e) {
+            let rect = document.getElementById('match-container').getBoundingClientRect();
+            let x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+            let y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+            return { x, y };
+        }
+        function startDraw(e) {
+            if(e.currentTarget.dataset.matched) return;
+            if(e.type === 'touchstart') e.preventDefault();
+            startEl = e.currentTarget;
+            let coords = getCoords(e);
+            let elRect = startEl.getBoundingClientRect(), contRect = document.getElementById('match-container').getBoundingClientRect();
+            activeLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            activeLine.setAttribute('x1', (elRect.left + elRect.width/2) - contRect.left);
+            activeLine.setAttribute('y1', (elRect.top + elRect.height/2) - contRect.top);
+            activeLine.setAttribute('x2', coords.x); activeLine.setAttribute('y2', coords.y);
+            activeLine.setAttribute('stroke', '#29b6f6'); activeLine.setAttribute('stroke-width', '6'); activeLine.setAttribute('stroke-linecap', 'round');
+            svg.appendChild(activeLine);
+        }
+        function drawMove(e) {
+            if (!activeLine) return;
+            if(e.type === 'touchmove') e.preventDefault();
+            let coords = getCoords(e);
+            activeLine.setAttribute('x2', coords.x); activeLine.setAttribute('y2', coords.y);
+        }
+        function endDraw(e) {
+            if (!activeLine) return;
+            let cx = e.type.includes('touch') ? e.changedTouches[0].clientX : e.clientX;
+            let cy = e.type.includes('touch') ? e.changedTouches[0].clientY : e.clientY;
+            let rightEl = [...document.querySelectorAll('.right-item')].find(item => {
+                let r = item.getBoundingClientRect();
+                return (cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom);
+            });
+
+            if (rightEl && rightEl.dataset.word === startEl.dataset.word && !rightEl.dataset.matched) {
+                let contRect = document.getElementById('match-container').getBoundingClientRect(), elRect = rightEl.getBoundingClientRect();
+                activeLine.setAttribute('x2', (elRect.left + elRect.width/2) - contRect.left); activeLine.setAttribute('y2', (elRect.top + elRect.height/2) - contRect.top);
+                activeLine.setAttribute('stroke', '#4caf50');
+                startEl.dataset.matched = 'true'; rightEl.dataset.matched = 'true';
+                startEl.style.opacity = '0.5'; rightEl.style.opacity = '0.5';
+                playChimeSound(); speakText(startEl.dataset.word);
+                matchesFound++;
+                if(matchesFound === document.querySelectorAll('.left-item').length) {
+                    document.getElementById('message2').innerText = "¡EXCELENTE TRABAJO! 🌟";
+                    document.getElementById('message2').className = "success";
+                    document.getElementById('btn-next-match').style.display = "inline-block";
+                }
+            } else {
+                if (rightEl && rightEl.dataset.word !== startEl.dataset.word) playBuzzerSound();
+                svg.removeChild(activeLine);
+            }
+            activeLine = null; startEl = null;
+        }
+        document.addEventListener('mousemove', drawMove); document.addEventListener('touchmove', drawMove, {passive: false});
+        document.addEventListener('mouseup', endDraw); document.addEventListener('touchend', endDraw);
+
+
+        /* --- LÓGICA DE ARRASTRE COMPARTIDA (JUEGO 3 Y 4) --- */
+        let activeEtiqueta = null;
+
+        function startEtiquetaDrag(e) {
+            if (this.classList.contains('placed')) return;
+            if (e.type === 'touchstart') e.preventDefault();
+            activeEtiqueta = this;
+            activeEtiqueta.style.position = 'fixed';
+            activeEtiqueta.style.zIndex = '1000';
+            moveEtiqueta(e);
+            document.addEventListener('mousemove', moveEtiqueta);
+            document.addEventListener('touchmove', moveEtiqueta, {passive: false});
+            document.addEventListener('mouseup', endEtiquetaDrag);
+            document.addEventListener('touchend', endEtiquetaDrag);
+        }
+
+        function moveEtiqueta(e) {
+            if (!activeEtiqueta) return;
+            if (e.type === 'touchmove') e.preventDefault();
+            let x = e.clientX || (e.touches && e.touches[0].clientX);
+            let y = e.clientY || (e.touches && e.touches[0].clientY);
+            activeEtiqueta.style.left = (x - activeEtiqueta.offsetWidth / 2) + 'px';
+            activeEtiqueta.style.top = (y - activeEtiqueta.offsetHeight / 2) + 'px';
+        }
+
+        function endEtiquetaDrag(e) {
+            if (!activeEtiqueta) return;
+            let cx = e.type.includes('touch') ? e.changedTouches[0].clientX : e.clientX;
+            let cy = e.type.includes('touch') ? e.changedTouches[0].clientY : e.clientY;
+
+            let targetDropZone = [...document.querySelectorAll('.drop-zone')].find(zone => {
+                let r = zone.getBoundingClientRect();
+                return (cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom);
+            });
+
+            if (targetDropZone && targetDropZone.dataset.word === activeEtiqueta.dataset.word && !targetDropZone.hasChildNodes()) {
+                activeEtiqueta.style.position = 'static';
+                activeEtiqueta.classList.add('placed');
+                targetDropZone.appendChild(activeEtiqueta);
+                playChimeSound(); 
+                speakText(activeEtiqueta.dataset.word);
+
+                if (activeGameId === 'game3') {
+                    let placedCount = document.querySelectorAll('#game3 .drop-zone .etiqueta').length;
+                    if (placedCount === document.querySelectorAll('#game3 .casilla').length) {
+                        document.getElementById('message3').innerText = "¡LO HICISTE MUY BIEN! 🌟";
+                        document.getElementById('message3').className = "success";
+                        document.getElementById('btn-next-drag').style.display = "inline-block";
+                    }
+                } else if (activeGameId === 'game4') {
+                    document.getElementById('message4').innerText = "¡ORACIÓN COMPLETADA! 🚀";
+                    document.getElementById('message4').className = "success";
+                    document.getElementById('btn-next-sentence').style.display = "inline-block";
+                }
+            } else {
+                if (targetDropZone && targetDropZone.dataset.word !== activeEtiqueta.dataset.word) playBuzzerSound();
+                activeEtiqueta.style.position = 'static';
+            }
+
+            document.removeEventListener('mousemove', moveEtiqueta);
+            document.removeEventListener('touchmove', moveEtiqueta);
+            document.removeEventListener('mouseup', endEtiquetaDrag);
+            document.removeEventListener('touchend', endEtiquetaDrag);
+            activeEtiqueta = null;
+        }
+
+        /* --- JUEGO 3: ARRASTRAR ETIQUETA --- */
+        function initDragGame() {
+            document.getElementById('message3').innerText = "";
+            document.getElementById('btn-next-drag').style.display = "none";
+            const casillas = document.getElementById('casillas-container');
+            const etiquetas = document.getElementById('etiquetas-container');
+            casillas.innerHTML = ''; etiquetas.innerHTML = '';
+
+            const currentVocab = getFilteredVocabulary();
+            let gameWords = [...currentVocab].sort(() => Math.random() - 0.5).slice(0, Math.min(3, currentVocab.length));
+            let shuffledLabels = [...gameWords].sort(() => Math.random() - 0.5);
+
+            gameWords.forEach(item => {
+                let c = document.createElement('div'); c.className = 'casilla';
+                c.innerHTML = `<div class="casilla-info"><span class="emoji-large">${item.emoji}</span><span class="small-text">${formatWordHTML(item.word)}</span></div><div class="drop-zone" data-word="${item.word}"></div>`;
+                casillas.appendChild(c);
+            });
+
+            shuffledLabels.forEach(item => {
+                let e = document.createElement('div'); e.className = 'etiqueta'; e.dataset.word = item.word;
+                e.innerHTML = formatWordHTML(item.word);
+                e.addEventListener('mousedown', startEtiquetaDrag); e.addEventListener('touchstart', startEtiquetaDrag, {passive: false});
+                etiquetas.appendChild(e);
+            });
+        }
+
+        /* --- JUEGO 4: COMPLETAR ORACIÓN --- */
+        function initSentenceGame() {
+            document.getElementById('message4').innerText = "";
+            document.getElementById('btn-next-sentence').style.display = "none";
+            
+            const sentenceContainer = document.getElementById('sentence-container');
+            const optionsContainer = document.getElementById('sentence-options-container');
+            sentenceContainer.innerHTML = ''; optionsContainer.innerHTML = '';
+
+            const currentSentences = getFilteredSentences();
+            const randomSentence = currentSentences[Math.floor(Math.random() * currentSentences.length)];
+
+            let sBox = document.createElement('div');
+            sBox.className = 'sentence-box';
+            sBox.innerHTML = `<span>${randomSentence.text}</span> <div class="drop-zone" data-word="${randomSentence.answer}"></div>`;
+            sentenceContainer.appendChild(sBox);
+
+            let options = [randomSentence.answer];
+            
+            let pool = vocabulary.filter(v => v.category === randomSentence.category);
+            if (pool.length < 3) pool = vocabulary; 
+
+            while (options.length < 3) {
+                const randomWord = pool[Math.floor(Math.random() * pool.length)].word;
+                if (!options.includes(randomWord)) options.push(randomWord);
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            options.forEach(word => {
+                let e = document.createElement('div');
+                e.className = 'etiqueta';
+                e.dataset.word = word;
+                e.innerHTML = formatWordHTML(word);
+                e.addEventListener('mousedown', startEtiquetaDrag);
+                e.addEventListener('touchstart', startEtiquetaDrag, {passive: false});
+                optionsContainer.appendChild(e);
+            });
+        }
+
+        window.onresize = () => { if (activeGameId === 'game2' && matchesFound < document.querySelectorAll('.left-item').length) initMatchGame(); };
+        
+        // SCRIPT PARA REGISTRAR LA APP EN EL CELULAR
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => {
+                    console.log('Nota: Service Worker no registrado aún. ', err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
