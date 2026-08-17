@@ -929,11 +929,13 @@
 
         window.onresize = () => { if (activeGameId === 'game2' && matchesFound < document.querySelectorAll('.left-item').length) initMatchGame(); };
         
-        // SCRIPT PARA REGISTRAR LA APP EN EL CELULAR
-        if ('serviceWorker' in navigator) {
+        // SCRIPT PARA REGISTRAR LA APP EN EL CELULAR (PWA)
+        if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(err => {
-                    console.log('Nota: Service Worker no registrado aún. ', err);
+                navigator.serviceWorker.register('./service-worker.js').then(reg => {
+                    console.log('Service Worker registrado correctamente.', reg);
+                }).catch(err => {
+                    console.log('Error al registrar Service Worker: ', err);
                 });
             });
         }
