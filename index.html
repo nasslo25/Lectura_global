@@ -173,16 +173,112 @@
         
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-        /* Firma */
-        .fixed { position: fixed; } .bottom-12 { bottom: 3rem; } .right-4 { right: 1rem; } .opacity-60 { opacity: 0.65; } .opacity-60:hover, .signature-block:hover { opacity: 1; } .transition-opacity { transition: opacity 500ms ease; } .duration-500 { transition-duration: 500ms; } .z-50 { z-index: 50; } .pointer-events-none { pointer-events: auto; } .select-none { user-select: none; } .flex { display: flex; } .flex-col { flex-direction: column; } .items-end { align-items: flex-end; } .text-\[0\.65rem\] { font-size: 0.65rem; } .text-gray-400 { color: #556b72; } .uppercase { text-transform: uppercase; } .tracking-widest { letter-spacing: 0.1em; } .font-sans { font-family: sans-serif; } .mb-\[-4px\] { margin-bottom: -4px; } .text-2xl { font-size: 1.5rem; } .text-gray-200 { color: #004d40; } .text-\[0\.6rem\] { font-size: 0.6rem; } .mt-1 { margin-top: 0.25rem; }
+        /* --- ESTILOS DE FIRMA CORPORATIVA DESPIERTA MENTES --- */
+        .firma-dm-container {
+          position: fixed;
+          z-index: 50;
+          pointer-events: none;
+          user-select: none;
+          opacity: 0.75;
+          transition: opacity 500ms;
+        }
+        .firma-dm-container:hover {
+          opacity: 1;
+        }
+
+        /* Posicionamiento para móviles */
+        .bottom-2 { bottom: 0.5rem; }
+        .right-2 { right: 0.5rem; }
+
+        /* Posicionamiento para escritorio (md y superior) */
+        @media (min-width: 768px) {
+          .md\:bottom-6 { bottom: 1.5rem; }
+          .md\:right-8 { right: 2rem; }
+        }
+
+        /* Ocultar al imprimir */
+        @media print {
+          .print\:hidden { display: none !important; }
+        }
+
+        /* Utilidades Flexbox y Texto */
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .gap-1 { gap: 0.25rem; }
+        .text-center { text-align: center; }
+        .w-full { width: 100%; }
+        .text-xs { font-size: 0.65rem; }
+        .text-slate-700 { color: #334155; } /* Ajustado para mejor contraste en fondo claro */
+        .uppercase { text-transform: uppercase; }
+        .tracking-widest { letter-spacing: 0.1em; }
+        .font-sans { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+
+        /* Estilo de la imagen del logo */
+        .firma-dm-logo {
+          width: 120px;
+          height: auto;
+          object-fit: contain;
+          filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+        }
+        /* ---------------------------------------------------- */
+        
         .welcome-signature { margin-top: 35px; padding-top: 15px; border-top: 2px dashed #b2ebf2; display: flex; flex-direction: column; align-items: center; }
 
-        @media (min-width: 768px) { .md\:bottom-16 { bottom: 4rem; } .md\:right-8 { right: 2rem; } }
-        @media print { .print\:hidden { display: none !important; } }
         @media (max-width: 480px) { .container { padding: 15px 12px; } .casilla { padding: 8px 10px; } .drop-zone { width: 50%; } }
+
+        /* --- PANTALLA DE BIENVENIDA (SPLASH SCREEN) --- */
+        #splash-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #e0f7fa; /* Mismo fondo celeste de la app */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
+        }
+        #splash-screen img {
+            width: clamp(120px, 25vw, 180px);
+            height: auto;
+            animation: pulseSplash 2s infinite;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15));
+        }
+        #splash-screen h2 {
+            color: #00838f;
+            margin-top: 25px;
+            font-size: clamp(20px, 5vw, 28px);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        @keyframes pulseSplash {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
 <body>
+
+    <!-- PANTALLA DE BIENVENIDA -->
+    <div id="splash-screen">
+        <img src="icono.png" alt="Aprendo a Leer" onerror="this.src='https://placehold.co/150x150/00838f/ffffff?text=Icono'">
+        <h2>Iniciando...</h2>
+    </div>
+
+    <!-- Script para ocultar la pantalla de bienvenida -->
+    <script>
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                const splash = document.getElementById('splash-screen');
+                if (splash) {
+                    splash.style.opacity = '0';
+                    setTimeout(() => { splash.style.visibility = 'hidden'; }, 800);
+                }
+            }, 2500); // 2.5 segundos de carga
+        });
+    </script>
 
     <div class="container">
         <h1>¡APRENDO A LEER!</h1>
@@ -222,9 +318,11 @@
             </div>
 
             <div class="welcome-signature">
-                <span class="text-[0.65rem] text-gray-400 uppercase tracking-widest font-sans mb-[-4px]">Creada por</span>
-                <span class="text-2xl text-gray-200" style="font-family: 'Brush Script MT', 'Lucida Handwriting', 'Great Vibes', cursive;">Nasslo Muñoz</span>
-                <span class="text-[0.6rem] text-gray-400 font-sans tracking-widest uppercase mt-1">Ingeniero Informático</span>
+                <!-- Firma Corporativa para el Menú Principal -->
+                <div class="flex flex-col items-center gap-1"> 
+                    <span class="text-xs text-slate-700 uppercase tracking-widest font-sans text-center w-full">Creada por</span>
+                    <img src="logofirma.png" alt="Despierta Mentes" class="firma-dm-logo" style="filter: none; width: 100px;">
+                </div>
             </div>
         </div>
 
@@ -313,12 +411,11 @@
         </div>
     </div>
 
-    <!-- BLOQUE DE FIRMA FLOTANTE -->
-    <div class="fixed bottom-12 right-4 md:bottom-16 md:right-8 opacity-60 hover:opacity-100 transition-opacity duration-500 z-50 print:hidden pointer-events-none select-none signature-block">
-        <div class="flex flex-col items-end">
-            <span class="text-[0.65rem] text-gray-400 uppercase tracking-widest font-sans mb-[-4px]">Creada por</span>
-            <span class="text-2xl text-gray-200" style="font-family: 'Brush Script MT', 'Lucida Handwriting', 'Great Vibes', cursive;">Nasslo Muñoz</span>
-            <span class="text-[0.6rem] text-gray-400 font-sans tracking-widest uppercase mt-1">Ingeniero Informático</span>
+    <!-- Firma Corporativa: Despierta Mentes (Con Logo) -->
+    <div class="firma-dm-container bottom-2 right-2 md:bottom-6 md:right-8 print:hidden">
+        <div class="flex flex-col items-center gap-1"> 
+            <span class="text-xs text-slate-700 uppercase tracking-widest font-sans text-center w-full">Creada por</span>
+            <img src="logofirma.png" alt="Despierta Mentes" class="firma-dm-logo">
         </div>
     </div>
 
