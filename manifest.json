@@ -1,16 +1,24 @@
 {
-  "name": "Aprendo a Leer: Lectura Global",
-  "short_name": "Lectura",
-  "description": "Juegos interactivos de lectura global para niños",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#e0f7fa",
-  "theme_color": "#29b6f6",
-  "icons": [
-    {
-      "src": "icono.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
+"name": "Aprendo a Leer · Despierta Mentes",
+"short_name": "A Leer",
+"description": "Juegos educativos de lectura global para niños.",
+"start_url": "./index.html",
+"display": "standalone",
+"background_color": "#e0f7fa",
+"theme_color": "#29b6f6",
+"orientation": "any",
+"icons": [
+{
+"src": "icono.png",
+"sizes": "192x192",
+"type": "image/png",
+"purpose": "any maskable"
+},
+{
+"src": "icono.png",
+"sizes": "512x512",
+"type": "image/png",
+"purpose": "any maskable"
+}
+]
 }
